@@ -1,0 +1,34 @@
+manifestVersion: 1.1
+id: haru-recyclarr
+category: media
+name: Recyclarr
+version: "8.7.3"
+tagline: Sync TRaSH Guides to Sonarr and Radarr
+description: >-
+  Recyclarr is a command-line tool and daemon that automatically synchronizes recommended configurations from the TRaSH Guides into your Sonarr and Radarr instances.
+
+
+  Features:
+
+  - Automatically synchronizes quality profiles, custom formats, and media naming conventions.
+
+  - Configured with TRaSH Guide recommended scoring and release filtering.
+
+  - Runs continuously in cron mode with automated daily sync schedules.
+developer: Recyclarr
+website: https://recyclarr.dev
+dependencies: []
+repo: https://github.com/recyclarr/recyclarr
+support: https://github.com/recyclarr/recyclarr/issues
+port: 8000
+gallery: []
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+icon: https://raw.githubusercontent.com/iamdavecalleja/haru-umbrel-app-store/main/haru-recyclarr/images/icon.svg
+storage:
+  dataRoot: data
+submitter: Dave Calleja
+submission: https://github.com/iamdavecalleja/haru-umbrel-app-store
+releaseNotes: >-
+  Initial release of Recyclarr 8.7.3 daemon for TRaSH guide synchronization on umbrelOS.
