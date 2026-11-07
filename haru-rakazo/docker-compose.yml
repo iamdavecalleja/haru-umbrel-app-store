@@ -46,7 +46,7 @@ services:
 
   db-backup:
     image: postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
-    user: "1000:1000"
+    user: "0:0"
     restart: unless-stopped
     depends_on:
       postgres:
