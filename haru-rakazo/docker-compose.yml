@@ -89,11 +89,12 @@ services:
 
   data-init:
     image: busybox:1@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e
-    command: ["chown", "-R", "1000:1000", "/data"]
+    command: ["sh", "-c", "chown -R 1000:1000 /data /webassets 2>/dev/null || true"]
     network_mode: none
     restart: "no"
     volumes:
       - ${APP_DATA_DIR}/data/appdata:/data
+      - ${APP_DATA_DIR}/data/webassets:/webassets
 
   supervisor:
     image: ghcr.io/elie222/rakazo/app:edge@sha256:24e460aca4390fd4773c7eacee50b6d5e5bca4af8cdb663729940b2591416638
