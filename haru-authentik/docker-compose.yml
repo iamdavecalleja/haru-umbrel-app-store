@@ -16,7 +16,7 @@ services:
         required: false
     environment:
       POSTGRES_USER: authentik
-      POSTGRES_PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-${PG_PASS:-${APP_PASSWORD}}}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-${AUTHENTIK_POSTGRES_PASSWORD:-${PG_PASS:-${APP_PASSWORD}}}}
       POSTGRES_DB: authentik
     networks:
       - internal
@@ -43,7 +43,7 @@ services:
       PGHOST: authentik-postgres
       PGPORT: 5432
       PGUSER: authentik
-      PGPASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-${PG_PASS:-${APP_PASSWORD}}}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-${AUTHENTIK_POSTGRES_PASSWORD:-${PG_PASS:-${APP_PASSWORD}}}}
       PGDATABASE: authentik
     networks:
       - internal
@@ -81,7 +81,7 @@ services:
       AUTHENTIK_POSTGRESQL__HOST: authentik-postgres
       AUTHENTIK_POSTGRESQL__USER: authentik
       AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-${PG_PASS:-${APP_PASSWORD}}}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRESQL__PASSWORD:-${AUTHENTIK_POSTGRES_PASSWORD:-${PG_PASS:-${APP_PASSWORD}}}}
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-${APP_SEED}}
       AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
       AUTHENTIK_MIGRATIONS__DANGEROUSLY_ALLOW_MULTIPLE_MAJOR_VERSION_UPGRADES: "true"
@@ -101,7 +101,6 @@ services:
     user: root
     shm_size: 512mb
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - ${APP_DATA_DIR}/data/authentik-data:/data
       - ${APP_DATA_DIR}/data/certs:/certs
       - ${APP_DATA_DIR}/data/custom-templates:/templates
@@ -112,7 +111,7 @@ services:
       AUTHENTIK_POSTGRESQL__HOST: authentik-postgres
       AUTHENTIK_POSTGRESQL__USER: authentik
       AUTHENTIK_POSTGRESQL__NAME: authentik
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-${PG_PASS:-${APP_PASSWORD}}}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRESQL__PASSWORD:-${AUTHENTIK_POSTGRES_PASSWORD:-${PG_PASS:-${APP_PASSWORD}}}}
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-${APP_SEED}}
       AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
       AUTHENTIK_MIGRATIONS__DANGEROUSLY_ALLOW_MULTIPLE_MAJOR_VERSION_UPGRADES: "true"
@@ -121,6 +120,7 @@ services:
         condition: service_healthy
     networks:
       - internal
+      - umbrel_main_network
 
 networks:
   internal:

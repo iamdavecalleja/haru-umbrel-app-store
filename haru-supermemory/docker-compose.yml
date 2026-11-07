@@ -23,9 +23,11 @@ services:
       - SUPERMEMORY_NO_OPEN=1
       - SUPERMEMORY_NO_UPDATE_CHECK=1
       - OPENAI_BASE_URL=${OPENAI_BASE_URL:-http://bifrost:8080/v1}
-      - OPENAI_MODEL=${OPENAI_MODEL:-gemini-3.8-flash}
-      - OPENAI_FAST_MODEL=${OPENAI_FAST_MODEL:-gemini-3.8-flash}
-      - TZ=UTC
+      - OPENAI_MODEL=${OPENAI_MODEL:-gemini-2.5-flash}
+      - OPENAI_FAST_MODEL=${OPENAI_FAST_MODEL:-gemini-2.5-flash}
+      - TZ=${TZ:-UTC}
+      - SUPERMEMORY_API_KEY=${SUPERMEMORY_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
     networks:
       umbrel_main_network:
         aliases:

@@ -22,8 +22,13 @@ services:
       - APP_PORT=8080
       - APP_HOST=0.0.0.0
       - APP_DIR=/app/data
-      - LOG_LEVEL=info
-      - TZ=UTC
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - TZ=${TZ:-UTC}
+      - BIFROST_ADMIN_USERNAME=${BIFROST_ADMIN_USERNAME:-dave}
+      - BIFROST_VK_ADMIN=${BIFROST_VK_ADMIN:-}
+      - BIFROST_VK_HA=${BIFROST_VK_HA:-}
+      - BIFROST_VK_RAKAZO=${BIFROST_VK_RAKAZO:-}
+      - GITHUB_MCP_PAT=${GITHUB_MCP_PAT:-}
     networks:
       umbrel_main_network:
         aliases:
