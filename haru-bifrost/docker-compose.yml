@@ -8,6 +8,7 @@ services:
 
   server:
     image: maximhq/bifrost:v2.4.0@sha256:a1c90607dcfd13c1fb2f9476ceb3bb24407a50ade7fdf3e61a59fb42b09e5c57
+    user: "0:0"
     restart: unless-stopped
     ports:
       - "127.0.0.1:4000:8080"
