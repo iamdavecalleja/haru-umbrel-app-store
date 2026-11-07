@@ -8,6 +8,10 @@ This repository is a personal community app store for [umbrelOS](https://umbrel.
 ## Included Apps
 
 - **Recyclarr (`haru-recyclarr`)**: Automatically synchronizes TRaSH Guides quality profiles, custom formats, and media naming conventions to Sonarr and Radarr.
+- **Bifrost (`haru-bifrost`)**: Lightweight Go AI Gateway & LLM fallback router across Gemini, local Ollama models, and cloud model providers.
+- **Supermemory (`haru-supermemory`)**: Self-hosted semantic memory and knowledge graph system for contextual AI recall.
+- **Rakazo (`haru-rakazo`)**: Autonomous AI teammates platform with secure container sandboxes, tool use, and passkey SSO.
+- **Authentik (`haru-authentik`)**: Open-source identity provider and SSO/OIDC service for self-hosted applications.
 
 ## Adding to Umbrel
 

@@ -1,0 +1,130 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: haru-authentik_server_1
+      APP_PORT: 9000
+
+  authentik-postgres:
+    image: postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
+    restart: unless-stopped
+    volumes:
+      - ${APP_DATA_DIR}/data/postgres:/var/lib/postgresql/data
+    env_file:
+      - path: ${APP_DATA_DIR}/data/secrets.env
+        required: false
+    environment:
+      POSTGRES_USER: authentik
+      POSTGRES_PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-${PG_PASS:-${APP_PASSWORD}}}
+      POSTGRES_DB: authentik
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d authentik -U authentik"]
+      start_period: 20s
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  db-backup:
+    image: postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
+    user: "1000:1000"
+    restart: unless-stopped
+    depends_on:
+      authentik-postgres:
+        condition: service_healthy
+    volumes:
+      - ${APP_DATA_DIR}/data/backups:/backups
+    env_file:
+      - path: ${APP_DATA_DIR}/data/secrets.env
+        required: false
+    environment:
+      PGHOST: authentik-postgres
+      PGPORT: 5432
+      PGUSER: authentik
+      PGPASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-${PG_PASS:-${APP_PASSWORD}}}
+      PGDATABASE: authentik
+    networks:
+      - internal
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /backups
+        while true; do
+          until pg_isready -h "$$PGHOST" -p "$$PGPORT" -U "$$PGUSER" -d "$$PGDATABASE"; do
+            sleep 5
+          done
+          TIMESTAMP=$$(date +%Y%m%d_%H%M%S)
+          pg_dump -Fc -h "$$PGHOST" -p "$$PGPORT" -U "$$PGUSER" -d "$$PGDATABASE" -f "/backups/authentik-$$TIMESTAMP.pgdump.tmp" && \
+            mv "/backups/authentik-$$TIMESTAMP.pgdump.tmp" "/backups/authentik-$$TIMESTAMP.pgdump" && \
+            cp "/backups/authentik-$$TIMESTAMP.pgdump" "/backups/authentik-latest.pgdump"
+          ls -1t /backups/authentik-*.pgdump 2>/dev/null | grep -v "authentik-latest.pgdump" | tail -n +4 | xargs -r rm -f
+          sleep 86400
+        done
+
+  server:
+    image: ghcr.io/goauthentik/server:2026.8.5@sha256:602227a86455d6772e3d16b7d852713c4f864f40df5df894abd1285bb53979a5
+    restart: unless-stopped
+    command: server
+    shm_size: 512mb
+    ports:
+      - "127.0.0.1:9000:9000"
+    volumes:
+      - ${APP_DATA_DIR}/data/authentik-data:/data
+      - ${APP_DATA_DIR}/data/custom-templates:/templates
+    env_file:
+      - path: ${APP_DATA_DIR}/data/secrets.env
+        required: false
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgres
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-${PG_PASS:-${APP_PASSWORD}}}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-${APP_SEED}}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+      AUTHENTIK_MIGRATIONS__DANGEROUSLY_ALLOW_MULTIPLE_MAJOR_VERSION_UPGRADES: "true"
+    depends_on:
+      authentik-postgres:
+        condition: service_healthy
+    networks:
+      internal:
+      umbrel_main_network:
+        aliases:
+          - authentik-server
+
+  worker:
+    image: ghcr.io/goauthentik/server:2026.8.5@sha256:602227a86455d6772e3d16b7d852713c4f864f40df5df894abd1285bb53979a5
+    restart: unless-stopped
+    command: worker
+    user: root
+    shm_size: 512mb
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${APP_DATA_DIR}/data/authentik-data:/data
+      - ${APP_DATA_DIR}/data/certs:/certs
+      - ${APP_DATA_DIR}/data/custom-templates:/templates
+    env_file:
+      - path: ${APP_DATA_DIR}/data/secrets.env
+        required: false
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgres
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-${PG_PASS:-${APP_PASSWORD}}}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-${APP_SEED}}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+      AUTHENTIK_MIGRATIONS__DANGEROUSLY_ALLOW_MULTIPLE_MAJOR_VERSION_UPGRADES: "true"
+    depends_on:
+      authentik-postgres:
+        condition: service_healthy
+    networks:
+      - internal
+
+networks:
+  internal:
+    name: haru-authentik_internal
+  umbrel_main_network:
+    name: umbrel_main_network
+    external: true

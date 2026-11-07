@@ -1,0 +1,34 @@
+manifestVersion: 1.1
+id: haru-rakazo
+category: ai
+name: Rakazo
+version: "0.1.0-edge"
+tagline: AI teammates you actually own
+description: >-
+  Rakazo gives you autonomous AI teammates that run entirely on your private infrastructure. Teammates can browse the web, write code, run commands in isolated sandboxes, coordinate over messaging channels, and remember context across sessions.
+
+
+  Features:
+
+  - Autonomous AI agents executing real work in secure container sandboxes.
+
+  - Deep integration with Bifrost for intelligent model fallback and Supermemory for semantic recall.
+
+  - First-party Composio tool integration, passkey authentication, and OIDC Single Sign-On.
+developer: Elie Steinbock
+website: https://rakazo.com
+dependencies: []
+repo: https://github.com/elie222/rakazo
+support: https://github.com/elie222/rakazo/issues
+port: 5175
+gallery: []
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+icon: https://raw.githubusercontent.com/iamdavecalleja/haru-umbrel-app-store/main/haru-rakazo/images/icon.png
+storage:
+  dataRoot: data
+submitter: Dave Calleja
+submission: https://github.com/iamdavecalleja/haru-umbrel-app-store
+releaseNotes: >-
+  Edge release of Rakazo AI teammates platform packaged for umbrelOS.

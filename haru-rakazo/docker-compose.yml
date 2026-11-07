@@ -1,0 +1,280 @@
+version: "3.7"
+
+x-app-environment: &app-environment
+  NODE_ENV: production
+  DATABASE_URL: postgres://rakazo_app:${POSTGRES_APP_PASSWORD:-${POSTGRES_PASSWORD:-${APP_PASSWORD}}}@postgres:5432/${POSTGRES_DB:-rakazo}
+  DATA_DIR: /data
+  CONTENT_ENCRYPTION: ${CONTENT_ENCRYPTION:-on}
+  WAKEUP_DRIVER: graphile
+  AGENT_RUNTIME: pi
+  API_URL: ${API_URL:-http://127.0.0.1:5173}
+  SECRET_STORE: ${SECRET_STORE:-encrypted}
+  SANDBOX_PROVIDER: ${SANDBOX_PROVIDER:-docker}
+  SANDBOX_SUPERVISOR_URL: http://supervisor:7091
+  SANDBOX_SUPERVISOR_TOKEN: ${SANDBOX_SUPERVISOR_TOKEN:-${APP_SEED}}
+  INTEGRATIONS_CATALOG_URL: ${INTEGRATIONS_CATALOG_URL:-https://integrations.sh/}
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: haru-rakazo_web_1
+      APP_PORT: 5173
+
+  postgres:
+    image: postgres:16@sha256:e17e86066e5ef83e0952a9347f5c792b7ece00972e2aa787a6986f471b3dd3d5
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 200
+    mem_limit: 2g
+    volumes:
+      - ${APP_DATA_DIR}/data/postgres:/var/lib/postgresql/data
+    env_file:
+      - path: ${APP_DATA_DIR}/data/secrets.env
+        required: false
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-rakazo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-${APP_PASSWORD}}
+      POSTGRES_DB: ${POSTGRES_DB:-rakazo}
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rakazo} -d ${POSTGRES_DB:-rakazo}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  db-backup:
+    image: postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
+    user: "1000:1000"
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ${APP_DATA_DIR}/data/backups:/backups
+    env_file:
+      - path: ${APP_DATA_DIR}/data/secrets.env
+        required: false
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: ${POSTGRES_USER:-rakazo}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-${APP_PASSWORD}}
+      PGDATABASE: ${POSTGRES_DB:-rakazo}
+    networks:
+      - internal
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /backups
+        while true; do
+          until pg_isready -h "$$PGHOST" -p "$$PGPORT" -U "$$PGUSER" -d "$$PGDATABASE"; do
+            sleep 5
+          done
+          TIMESTAMP=$$(date +%Y%m%d_%H%M%S)
+          pg_dump -Fc -h "$$PGHOST" -p "$$PGPORT" -U "$$PGUSER" -d "$$PGDATABASE" -f "/backups/rakazo-$$TIMESTAMP.pgdump.tmp" && \
+            mv "/backups/rakazo-$$TIMESTAMP.pgdump.tmp" "/backups/rakazo-$$TIMESTAMP.pgdump" && \
+            cp "/backups/rakazo-$$TIMESTAMP.pgdump" "/backups/rakazo-latest.pgdump"
+          ls -1t /backups/rakazo-*.pgdump 2>/dev/null | grep -v "rakazo-latest.pgdump" | tail -n +4 | xargs -r rm -f
+          sleep 86400
+        done
+
+  computer:
+    image: ghcr.io/elie222/rakazo/computer:edge@sha256:fa96e9d45fc287f15e02aeaceac5f124c07968ae8171fd7218ec3b322a846c07
+    command: ["true"]
+    network_mode: none
+    restart: "no"
+
+  data-init:
+    image: busybox:1@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e
+    command: ["chown", "-R", "1000:1000", "/data"]
+    network_mode: none
+    restart: "no"
+    volumes:
+      - ${APP_DATA_DIR}/data/appdata:/data
+
+  supervisor:
+    image: ghcr.io/elie222/rakazo/app:edge@sha256:24e460aca4390fd4773c7eacee50b6d5e5bca4af8cdb663729940b2591416638
+    restart: unless-stopped
+    command: ["pnpm", "--filter", "@rakazo/sandbox-supervisor", "start"]
+    init: true
+    user: root
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 512m
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${APP_DATA_DIR}/data/appdata:/data
+    env_file:
+      - path: ${APP_DATA_DIR}/data/secrets.env
+        required: false
+    environment:
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-10}
+      NODE_ENV: production
+      DATA_DIR: /data
+      SUPERVISOR_HOST: "0.0.0.0"
+      SUPERVISOR_PORT: "7091"
+      DOCKER_SOCKET: /var/run/docker.sock
+      RAKAZO_COMPUTER_IMAGE: ghcr.io/elie222/rakazo/computer:edge@sha256:fa96e9d45fc287f15e02aeaceac5f124c07968ae8171fd7218ec3b322a846c07
+      RAKAZO_COMPUTER_MEMORY: ${RAKAZO_COMPUTER_MEMORY:-2g}
+      RAKAZO_COMPUTER_CPUS: ${RAKAZO_COMPUTER_CPUS:-2}
+      RAKAZO_COMPUTER_PIDS_LIMIT: ${RAKAZO_COMPUTER_PIDS_LIMIT:-2048}
+      SANDBOX_COMMAND_TIMEOUT_MS: ${SANDBOX_COMMAND_TIMEOUT_MS:-300000}
+      SANDBOX_SUPERVISOR_TOKEN: ${SANDBOX_SUPERVISOR_TOKEN:-${APP_SEED}}
+      SANDBOX_SCREEN_NETWORK: isolated
+      SANDBOX_COMPUTER_EGRESS: ${SANDBOX_COMPUTER_EGRESS:-auto}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    networks:
+      - internal
+    depends_on:
+      computer:
+        condition: service_completed_successfully
+      data-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:7091/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  api:
+    image: ghcr.io/elie222/rakazo/app:edge@sha256:24e460aca4390fd4773c7eacee50b6d5e5bca4af8cdb663729940b2591416638
+    restart: unless-stopped
+    working_dir: /app/apps/api
+    command:
+      - bash
+      - -lc
+      - pnpm db:deploy && exec env -u DATABASE_MIGRATION_URL node --enable-source-maps dist/index.js
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 256
+    mem_limit: 1536m
+    ports:
+      - "127.0.0.1:3100:3100"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${APP_DATA_DIR}/data/appdata:/data
+    env_file:
+      - path: ${APP_DATA_DIR}/data/secrets.env
+        required: false
+    environment:
+      <<: *app-environment
+      DATABASE_MIGRATION_URL: postgres://${POSTGRES_USER:-rakazo}:${POSTGRES_PASSWORD:-${APP_PASSWORD}}@postgres:5432/${POSTGRES_DB:-rakazo}
+      API_HOST: "0.0.0.0"
+      API_PORT: 3100
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-${APP_SEED}}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://127.0.0.1:5173}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://127.0.0.1:5173}
+      AUTH_PASSWORD_ENABLED: ${AUTH_PASSWORD_ENABLED:-true}
+      SCREEN_PROXY_SECRET: ${SCREEN_PROXY_SECRET:-${APP_SEED}}
+      SANDBOX_SUPERVISOR_TOKEN: ${SANDBOX_SUPERVISOR_TOKEN:-${APP_SEED}}
+    networks:
+      internal:
+      umbrel_main_network:
+        aliases:
+          - rakazo-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      data-init:
+        condition: service_completed_successfully
+      supervisor:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3100/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  worker:
+    image: ghcr.io/elie222/rakazo/app:edge@sha256:24e460aca4390fd4773c7eacee50b6d5e5bca4af8cdb663729940b2591416638
+    restart: unless-stopped
+    working_dir: /app/apps/worker
+    command: ["node", "--enable-source-maps", "dist/index.js"]
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 512
+    mem_limit: 2g
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${APP_DATA_DIR}/data/appdata:/data
+    env_file:
+      - path: ${APP_DATA_DIR}/data/secrets.env
+        required: false
+    environment:
+      <<: *app-environment
+    networks:
+      - internal
+      - umbrel_main_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      data-init:
+        condition: service_completed_successfully
+      supervisor:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "dist/health-check.js"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 2m
+
+  web:
+    image: ghcr.io/elie222/rakazo/app:edge@sha256:24e460aca4390fd4773c7eacee50b6d5e5bca4af8cdb663729940b2591416638
+    restart: unless-stopped
+    working_dir: /app/apps/web
+    command: ["node_modules/.bin/vite", "preview", "--host", "0.0.0.0", "--port", "5173"]
+    volumes:
+      - ${APP_DATA_DIR}/data/webassets:/app/apps/web/asset-archive
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 128
+    mem_limit: 512m
+    ports:
+      - "127.0.0.1:5173:5173"
+    env_file:
+      - path: ${APP_DATA_DIR}/data/secrets.env
+        required: false
+    environment:
+      NODE_ENV: production
+      API_PROXY_TARGET: http://api:3100
+      RAKAZO_HOST: ${RAKAZO_HOST:-localhost}
+      SCREEN_PROXY_SECRET: ${SCREEN_PROXY_SECRET:-${APP_SEED}}
+    networks:
+      - internal
+      - umbrel_main_network
+    depends_on:
+      api:
+        condition: service_healthy
+
+networks:
+  internal:
+    name: haru-rakazo_internal
+  umbrel_main_network:
+    name: umbrel_main_network
+    external: true

@@ -1,0 +1,34 @@
+manifestVersion: 1.1
+id: haru-authentik
+category: security
+name: Authentik
+version: "2026.8.5"
+tagline: Open-source Identity Provider & SSO
+description: >-
+  Authentik is an open-source Identity Provider focused on flexibility and security. It provides centralized authentication, Single Sign-On (SSO), OAuth2/OIDC, SAML, and user lifecycle management for all self-hosted services.
+
+
+  Features:
+
+  - Centralized OIDC identity provider for Pangolin, Cloudflare Tunnels, Rakazo, Sure, and Home Assistant.
+
+  - Multi-factor authentication (Passkeys, WebAuthn, TOTP).
+
+  - Flexible authentication and enrollment flows with granular RBAC.
+developer: Authentik Security
+website: https://goauthentik.io
+dependencies: []
+repo: https://github.com/goauthentik/authentik
+support: https://github.com/goauthentik/authentik/issues
+port: 9095
+gallery: []
+path: "/if/flow/initial-setup/"
+defaultUsername: ""
+defaultPassword: ""
+icon: https://raw.githubusercontent.com/iamdavecalleja/haru-umbrel-app-store/main/haru-authentik/images/icon.svg
+storage:
+  dataRoot: data
+submitter: Dave Calleja
+submission: https://github.com/iamdavecalleja/haru-umbrel-app-store
+releaseNotes: >-
+  Authentik 2026.8.5 unified identity provider package on umbrelOS.

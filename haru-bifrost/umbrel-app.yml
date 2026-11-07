@@ -1,0 +1,34 @@
+manifestVersion: 1.1
+id: haru-bifrost
+category: ai
+name: Bifrost
+version: "2.4.0"
+tagline: Lightweight Go AI Gateway & LLM fallback router
+description: >-
+  Bifrost is an ultra-fast, lightweight AI gateway written in Go that provides a unified OpenAI-compatible endpoint, intelligent load balancing, and automated fallback routing across Gemini, local Ollama models, Vercel AI Gateway, and cloud model providers.
+
+
+  Features:
+
+  - Unified OpenAI-compatible API endpoint for all downstream consumers (Home Assistant, Sure, Supermemory, Rakazo).
+
+  - Automatic fallbacks and retry logic to keep AI integrations resilient during upstream provider outages.
+
+  - Low memory footprint and native high-concurrency architecture.
+developer: Maxim
+website: https://github.com/maximhq/bifrost
+dependencies: []
+repo: https://github.com/maximhq/bifrost
+support: https://github.com/maximhq/bifrost/issues
+port: 4005
+gallery: []
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+icon: https://raw.githubusercontent.com/iamdavecalleja/haru-umbrel-app-store/main/haru-bifrost/images/icon.png
+storage:
+  dataRoot: data
+submitter: Dave Calleja
+submission: https://github.com/iamdavecalleja/haru-umbrel-app-store
+releaseNotes: >-
+  Initial release of Bifrost v2.4.0 AI Gateway on umbrelOS.

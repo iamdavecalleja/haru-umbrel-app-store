@@ -1,0 +1,34 @@
+manifestVersion: 1.1
+id: haru-supermemory
+category: ai
+name: Supermemory
+version: "0.0.9"
+tagline: Self-hosted semantic memory & knowledge graph server
+description: >-
+  Supermemory is a self-hosted semantic memory and knowledge graph system that organizes, indexes, and queries personal context and memories. It acts as a persistent contextual brain across Rakazo AI teammates, Antigravity, and Home Assistant automations.
+
+
+  Features:
+
+  - Semantic indexing and retrieval of notes, conversations, and documents.
+
+  - Compatible with Bifrost and local LLMs via unified OpenAI API routing.
+
+  - High-performance vector embeddings and relational graph extraction.
+developer: Supermemory AI
+website: https://supermemory.ai
+dependencies: []
+repo: https://github.com/supermemoryai/supermemory
+support: https://github.com/supermemoryai/supermemory/issues
+port: 6769
+gallery: []
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+icon: https://raw.githubusercontent.com/iamdavecalleja/haru-umbrel-app-store/main/haru-supermemory/images/icon.png
+storage:
+  dataRoot: data
+submitter: Dave Calleja
+submission: https://github.com/iamdavecalleja/haru-umbrel-app-store
+releaseNotes: >-
+  Initial release of Supermemory 0.0.9 semantic memory server on umbrelOS.
