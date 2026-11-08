@@ -40,8 +40,11 @@ services:
       - path: ${APP_DATA_DIR}/data/secrets.env
         required: false
     networks:
-      - default
-      - umbrel_main_network
+      default:
+      umbrel_main_network:
+        aliases:
+          - unifi
+          - haru-unifi-network-mcp_web_1
 
 networks:
   umbrel_main_network:
