@@ -6,9 +6,20 @@ services:
       APP_HOST: haru-unifi-network-mcp_web_1
       APP_PORT: 3000
 
+  data-init:
+    image: busybox:1@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e
+    command: ["sh", "-c", "chmod -R a+rwX /home/umbrel/umbrel/app-data/haru-bifrost/data 2>/dev/null || true"]
+    network_mode: none
+    restart: "no"
+    volumes:
+      - /home/umbrel/umbrel/app-data/haru-bifrost/data:/home/umbrel/umbrel/app-data/haru-bifrost/data
+
   web:
     image: ghcr.io/sirkirby/unifi-network-mcp:latest
     restart: unless-stopped
+    depends_on:
+      data-init:
+        condition: service_completed_successfully
     ports:
       - "127.0.0.1:3000:3000"
     environment:
