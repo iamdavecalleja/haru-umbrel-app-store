@@ -32,8 +32,8 @@ services:
       - UNIFI_MCP_HOST=0.0.0.0
       - UNIFI_MCP_PORT=3000
       - UNIFI_MCP_HTTP_AUTH_TOKEN=${UNIFI_MCP_HTTP_AUTH_TOKEN:-${APP_SEED}}
-      - UNIFI_USERNAME=${UNIFI_USERNAME:-mcp-admin}
-      - UNIFI_PASSWORD=${UNIFI_PASSWORD:-}
+      - UNIFI_USERNAME=${HOMELAB_UNIFI_USER:-${UNIFI_USERNAME:-mcp-admin}}
+      - UNIFI_PASSWORD=${HOMELAB_UNIFI_PASSWORD:-${UNIFI_PASSWORD:-}}
     env_file:
       - path: ${APP_DATA_DIR}/data/secrets.env
         required: false
