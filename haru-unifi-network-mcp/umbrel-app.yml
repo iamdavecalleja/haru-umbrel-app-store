@@ -1,0 +1,34 @@
+manifestVersion: 1.1
+id: haru-unifi-network-mcp
+category: developer
+name: UniFi Network MCP
+version: "1.0.0"
+tagline: Model Context Protocol (MCP) server for UniFi Network controllers
+description: >-
+  UniFi Network MCP provides Model Context Protocol (MCP) tools for inspecting, monitoring, and configuring UniFi Network controllers and gateways, including port forwards, client devices, firewall policies, and network topology.
+
+
+  Features:
+
+  - Complete port forward inspection and rule management.
+
+  - Client device tracking, status, and network topology mapping.
+
+  - Streamable HTTP MCP transport with token-based authentication.
+developer: sirkirby
+website: https://github.com/sirkirby/unifi-network-mcp
+dependencies: []
+repo: https://github.com/sirkirby/unifi-network-mcp
+support: https://github.com/sirkirby/unifi-network-mcp/issues
+port: 3000
+gallery: []
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+icon: https://raw.githubusercontent.com/iamdavecalleja/haru-umbrel-app-store/main/haru-unifi-network-mcp/images/icon.svg
+storage:
+  dataRoot: data
+submitter: Dave Calleja
+submission: https://github.com/iamdavecalleja/haru-umbrel-app-store
+releaseNotes: >-
+  Initial release of UniFi Network MCP server for umbrelOS.

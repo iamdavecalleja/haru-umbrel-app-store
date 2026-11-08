@@ -1,0 +1,36 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: haru-unifi-network-mcp_web_1
+      APP_PORT: 3000
+
+  web:
+    image: ghcr.io/sirkirby/unifi-network-mcp:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - UNIFI_HOST=192.168.1.1
+      - UNIFI_PORT=443
+      - UNIFI_VERIFY_SSL=false
+      - UNIFI_REDACT_SENSITIVE_FIELDS=true
+      - UNIFI_MCP_HTTP_ENABLED=true
+      - UNIFI_MCP_HTTP_TRANSPORT=streamable-http
+      - UNIFI_MCP_HOST=0.0.0.0
+      - UNIFI_MCP_PORT=3000
+      - UNIFI_MCP_HTTP_AUTH_TOKEN=${UNIFI_MCP_HTTP_AUTH_TOKEN:-${APP_SEED}}
+      - UNIFI_USERNAME=${UNIFI_USERNAME:-mcp-admin}
+      - UNIFI_PASSWORD=${UNIFI_PASSWORD:-}
+    env_file:
+      - path: ${APP_DATA_DIR}/data/secrets.env
+        required: false
+    networks:
+      - default
+      - umbrel_main_network
+
+networks:
+  umbrel_main_network:
+    name: umbrel_main_network
+    external: true
