@@ -19,7 +19,6 @@ services:
         required: false
     environment:
       APP_URL: ${APP_URL:-https://auth.calleja.app}
-      INTERNAL_APP_URL: http://haru-pocket-id_server_1:1411
       TRUST_PROXY: "true"
       PORT: "1411"
       HOST: 0.0.0.0
