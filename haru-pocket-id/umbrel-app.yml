@@ -1,0 +1,34 @@
+manifestVersion: 1.1
+id: haru-pocket-id
+category: security
+name: Pocket ID
+version: "2.19.2"
+tagline: Simple, passkey-first OIDC identity provider
+description: >-
+  Pocket ID is a lightweight, passkey-first OpenID Connect (OIDC) provider that lets users authenticate to self-hosted applications with WebAuthn passkeys instead of passwords.
+
+
+  Features:
+
+  - Passwordless WebAuthn/Passkey authentication with one-time enrollment links.
+
+  - Standards-compliant OpenID Connect 1.0 provider with PKCE and REST API provisioning.
+
+  - Single Go binary with SQLite storage (~30 MB RAM footprint).
+developer: Elias Schneider
+website: https://pocket-id.org
+dependencies: []
+repo: https://github.com/pocket-id/pocket-id
+support: https://github.com/pocket-id/pocket-id/issues
+port: 1411
+gallery: []
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+icon: https://raw.githubusercontent.com/pocket-id/pocket-id/main/frontend/static/img/logo.png
+storage:
+  dataRoot: data
+submitter: Dave Calleja
+submission: https://github.com/iamdavecalleja/haru-umbrel-app-store
+releaseNotes: >-
+  Pocket ID v2.19.2 passkey-first OIDC identity provider package on umbrelOS.

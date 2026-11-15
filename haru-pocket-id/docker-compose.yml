@@ -1,0 +1,47 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: haru-pocket-id_server_1
+      APP_PORT: 1411
+
+  server:
+    image: ghcr.io/pocket-id/pocket-id:v2.19.2
+    restart: unless-stopped
+    stop_grace_period: 1m
+    ports:
+      - "1411:1411"
+    volumes:
+      - ${APP_DATA_DIR}/data:/app/data
+    env_file:
+      - path: ${APP_DATA_DIR}/data/secrets.env
+        required: false
+    environment:
+      APP_URL: ${APP_URL:-https://auth.calleja.app}
+      INTERNAL_APP_URL: http://haru-pocket-id_server_1:1411
+      TRUST_PROXY: "true"
+      PORT: "1411"
+      HOST: 0.0.0.0
+      TZ: Australia/Perth
+      PKCE_ENABLED: "true"
+      ALLOW_USER_SIGNUPS: "disabled"
+      UI_CONFIG_DISABLED: "false"
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-${APP_SEED}}
+      STATIC_API_KEY: ${STATIC_API_KEY:-}
+    networks:
+      default:
+      umbrel_main_network:
+        aliases:
+          - pocket-id
+          - haru-pocket-id_server_1
+    healthcheck:
+      test: ["CMD", "/app/pocket-id", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  umbrel_main_network:
+    name: umbrel_main_network
+    external: true
